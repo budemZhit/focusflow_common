@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"bytes"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -13,11 +14,17 @@ import (
 type statusRecorder struct {
 	http.ResponseWriter
 	status int
+	body   *bytes.Buffer
 }
 
 func (rec *statusRecorder) WriteHeader(code int) {
 	rec.status = code
 	rec.ResponseWriter.WriteHeader(code)
+}
+
+func (rec *statusRecorder) Write(b []byte) (int, error) {
+	rec.body.Write(b) // сохраняем копию ответа
+	return rec.ResponseWriter.Write(b)
 }
 
 func RequestLogger(log *slog.Logger) func(next http.Handler) http.Handler {
@@ -26,7 +33,7 @@ func RequestLogger(log *slog.Logger) func(next http.Handler) http.Handler {
 			start := time.Now()
 
 			// оборачиваем ResponseWriter, чтобы поймать статус
-			rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+			rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK, body: bytes.NewBuffer(nil)}
 
 			// вызываем следующий обработчик
 			next.ServeHTTP(rec, r)
