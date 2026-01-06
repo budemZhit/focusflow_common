@@ -1,4 +1,4 @@
-module github.com/budemZhit/FocusFlow/back/common
+module github.com/budemZhit/focusflow_common
 
 go 1.23.4
 
