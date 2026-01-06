@@ -28,6 +28,7 @@ func baseMiddlewares(log *slog.Logger) []func(http.Handler) http.Handler {
 	control := []func(http.Handler) http.Handler{
 		middleware.Recoverer,
 		middleware.Timeout(60 * time.Second),
+		CORSMiddleware,
 	}
 
 	// объединяем pipeline в правильном порядке
